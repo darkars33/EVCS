@@ -2,8 +2,29 @@ import React from "react";
 import { StyleSheet, View, Text, Image } from "react-native";
 import Colors from "../../Utils/Colors";
 import { TouchableOpacity } from "react-native";
+import * as WebBrowser from "expo-web-browser";
+import { useWarmUpBrowser } from "../../../hooks/warmUpBrower";
+import { useOAuth } from "@clerk/clerk-expo";
 
+WebBrowser.maybeCompleteAuthSession();
 const LoginScreen = () => {
+  useWarmUpBrowser();
+
+  const {startOAuthFlow} = useOAuth({strategy: "oauth_google"})
+
+  const onPress = async() =>{
+    try {
+      const {createdSessionId, signIn, signUp, setActive} = await startOAuthFlow();
+      if(createdSessionId){
+        setActive();
+      }else{
+        console.log("User is already signed in");
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
   return (
     <View
       style={{
@@ -28,7 +49,7 @@ const LoginScreen = () => {
         <Text style={styles.description}>
           Find EV charging Station near you, plan trip and so much many more
         </Text>
-        <TouchableOpacity onPress={() => alert("button click")} >
+        <TouchableOpacity onPress={onPress} >
           <Text style={styles.button}>Login With Google</Text>
         </TouchableOpacity>
       </View>
